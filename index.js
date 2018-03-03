@@ -4,7 +4,7 @@ var os = require('os');
 var http = require('http');
 var socketIO = require('socket.io');
 var app = http.createServer().listen(process.env.PORT || 8080);
-
+console.log('listening to ' + (process.env.PORT || 8080));
 var io = socketIO.listen(app);
 io.sockets.on('connection', function (socket) {
     // convenience function to log server messages on the client
