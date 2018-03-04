@@ -25,16 +25,24 @@ io.sockets.on('connection', function (socket) {
         }
 
         socket.join(publicKey);
-        socket.emit('enter_my_room', true, socket.id);
+        socket.emit('enter_my_room', true);
+    });
+
+    socket.on('connection_request', function (senderPublicKey, recipientPublicKey) {
+        log('connection_request: from : ' + senderPublicKey + ' to: ' + recipientPublicKey);
+        var room = io.sockets.adapter.rooms[recipientPublicKey];
+        console.log('sending message to room: ' + room + ' length: ' + room.length);
+        io.to(recipientPublicKey).emit('connection_request', senderPublicKey);
     });
 
     /**
      * In this case server will pass out message from this socket to recipients room.
      */
     socket.on('signalling_message', function (recipientPublicKey, message) {
-        log('signalling_message: ' + recipientPublicKey + ' message: ' + message);
+        log('signalling_message: ' + recipientPublicKey);
         var room = io.sockets.adapter.rooms[recipientPublicKey];
-        io.to(room).emit('signalling_message', message);
+        console.log('sending message to room: ' + room + ' length: ' + room.length);
+        io.to(recipientPublicKey).emit('signalling_message', message);
     });
 
     socket.on('ipaddr', function () {
