@@ -22,18 +22,23 @@ io.sockets.on('connection', function (socket) {
         let room = io.sockets.adapter.rooms[message.fromPublicKey];
         // TODO add authentication logic
         if (false) {
-            socket.emit('error', 'authentication error', socket.id);
+            socket.emit('error', message);
+        } else {
+            socket.join(message.fromPublicKey);
+            socket.emit('enter_my_room', true);
         }
-
-        socket.join(message.fromPublicKey);
-        socket.emit('enter_my_room', true);
     });
 
     socket.on('connection_request', function (message) {
         log('connection_request: from : ' + message.fromPublicKey + ' to: ' + message.toPublicKey);
         let room = io.sockets.adapter.rooms[message.toPublicKey];
-        console.log('sending message to room: ' + room + ' length: ' + room.length);
-        io.to(message.toPublicKey).emit('connection_request', message);
+        if (room && room.length > 0) {
+            log('sending message to room: ' + room + ' length: ' + room.length);
+            io.to(message.toPublicKey).emit('connection_request', message);
+        } else {
+            log('connection_request was not sent to: ' + message.fromPublicKey);
+            io.to(message.fromPublicKey).emit('error', message);
+        }
     });
 
     /**
@@ -42,8 +47,13 @@ io.sockets.on('connection', function (socket) {
     socket.on('signalling_message', function (message) {
         log('signalling_message: to: ' + message.toPublicKey);
         let room = io.sockets.adapter.rooms[message.toPublicKey];
-        console.log('sending message to room: ' + room + ' length: ' + room.length);
-        io.to(message.toPublicKey).emit('signalling_message', message);
+        if (room && room.length > 0) {
+            log('sending message to room: ' + room + ' length: ' + room.length);
+            io.to(message.toPublicKey).emit('signalling_message', message);
+        } else {
+            log('signalling_message was not sent to: ' + message.fromPublicKey);
+            io.to(message.fromPublicKey).emit('error', message);
+        }
     });
 
     socket.on('ipaddr', function () {
